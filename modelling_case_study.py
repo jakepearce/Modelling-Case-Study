@@ -5,6 +5,8 @@ Starter data for the UAV rating model.
 - tpl_limit and tpl_excess manually added so the file runs. 
 """
 
+from rating_constants import HULL_BASE_RATE, WEIGHT_ADJUSTMENT 
+from decimal import Decimal, ROUND_HALF_UP
 
 def get_example_data():
     """
@@ -112,12 +114,45 @@ def get_example_data():
 
 def main():
     """ 
-    Perform the rating calculations replicating 
+    Perform the rating calculations replicating. 
     """
-
-    # Get the example data structure
     model_data = get_example_data()
 
-    # Your code here - replicate the spreadsheet model calculations on the data provided in model_data
+    # --- HULL for drones ---
+    for drone in model_data["drones"]:
+        rate_hull_for_drone(drone)
+
     return model_data
+
+
+def _money(x: Decimal) -> float:
+    """
+    Round a Decimla to 2 dp and return as float (JSON-friendly).
+    """
+    return float(x.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+
+
+def rate_hull_for_drone(drone: dict) -> dict:
+    """
+    Fill HULL fields for a single drone (NET at line level).
+    final_rate = base_rate * weight_adjustment
+    hull_premium = value * final_rate
+    """
+
+    # 1) Base + Adjustment
+    base = HULL_BASE_RATE
+    adj = WEIGHT_ADJUSTMENT[drone["weight"]]
+
+    # 2) Final Rate & Premium (as Decimal)
+    final_rate = base * adj
+    premium = Decimal(drone["value"]) * final_rate
+
+    # 3) Store (round to 2 dp)
+    drone["hull_base_rate"] = float(base)
+    drone["hull_weight_adjustment"] = float(adj)
+    drone["hull_final_rate"] = float(final_rate)
+    drone["hull_premium"] = _money(premium)
+
+    return drone
+
 
