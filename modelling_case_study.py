@@ -119,5 +119,5 @@ def main():
     model_data = get_example_data()
 
     # Your code here - replicate the spreadsheet model calculations on the data provided in model_data
-    pass
+    return model_data
 
