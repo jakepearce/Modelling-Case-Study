@@ -5,7 +5,7 @@ Starter data for the UAV rating model.
 - tpl_limit and tpl_excess manually added so the file runs. 
 """
 
-from rating_constants import HULL_BASE_RATE, WEIGHT_ADJUSTMENT 
+from rating_constants import HULL_BASE_RATE, WEIGHT_ADJUSTMENT, TPL_BASE_RATE, TPL_ILF 
 from decimal import Decimal, ROUND_HALF_UP
 
 def get_example_data():
@@ -118,11 +118,13 @@ def main():
     """
     model_data = get_example_data()
 
-    # --- HULL for drones ---
+    # --- HULL & TPL for drones ---
     for drone in model_data["drones"]:
         rate_hull_for_drone(drone)
+        rate_tpl_for_drone(drone)
 
     return model_data
+    
 
 
 def _money(x: Decimal) -> float:
@@ -155,4 +157,29 @@ def rate_hull_for_drone(drone: dict) -> dict:
 
     return drone
 
+def rate_tpl_for_drone(drone: dict) -> dict:
+    """
+    Fill TPL fields for a single drone (NET at line level).
+    base_layer_premium = value * TPL_BASE_RATE
+    layer_premium = base_layer_premium * ILF(limit, excess)
+    """
+    
+    # 1) Base Rate & Base Layer Premium
+    base_rate = TPL_BASE_RATE 
+    base_layer_premium = Decimal(drone["value"]) * base_rate
+
+    # 2) ILF lookup (limit, excess)
+    limit_dec = Decimal(drone["tpl_limit"])
+    excess_dec = Decimal(drone["tpl_excess"])
+    ilf = TPL_ILF[(limit_dec, excess_dec)]
+
+    # 3) Layer Premium (NET) & Store (round to 2 dp)
+    layer_prem = base_layer_premium * ilf
+
+    drone["tpl_base_rate"] = float(base_rate)
+    drone["tpl_base_layer_premium"] = _money(base_layer_premium)
+    drone["tpl_ilf"] = float(ilf)
+    drone["tpl_layer_premium"] = _money(layer_prem)
+
+    return drone
 
