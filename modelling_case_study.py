@@ -122,6 +122,9 @@ def main():
     for drone in model_data["drones"]:
         rate_hull_for_drone(drone)
         rate_tpl_for_drone(drone)
+    
+    # --- CAMERAS ---
+    rate_cameras(model_data)
 
     return model_data
     
@@ -157,6 +160,7 @@ def rate_hull_for_drone(drone: dict) -> dict:
 
     return drone
 
+
 def rate_tpl_for_drone(drone: dict) -> dict:
     """
     Fill TPL fields for a single drone (NET at line level).
@@ -183,3 +187,31 @@ def rate_tpl_for_drone(drone: dict) -> dict:
 
     return drone
 
+
+def rate_cameras(model_data: dict) -> None:
+    """
+    Set camera hull_rate to the highest eligible drone hull_final_rate.
+    (Consider only drones where has_detachable_camera = True).
+    Then compuye each camera's hull_premium (NET). 
+    """
+
+    drones = model_data["drones"]
+
+    # Eligible drones for camera attachment
+    eligible = [d for d in drones if d.get("has_detachable_camera")]
+
+    # If no eligible drones, no camera rate to apply
+    if not eligible:
+        for cam in model_data["detachable_cameras"]:
+            cam["hull_rate"] = 0.0
+            cam["hull_premium"] = 0.0
+        return
+    
+    # Max hull_final_rate among eligible drones
+    max_rate = max(d["hull_final_rate"] for d in eligible)
+
+    # Apply to each camera
+    for cam in model_data["detachable_cameras"]:
+        cam["hull_rate"] = float(max_rate)
+        prem = Decimal(cam["value"]) * Decimal(str(max_rate))
+        cam["hull_premium"] = _money(prem)
