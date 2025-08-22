@@ -126,6 +126,9 @@ def main():
     # --- CAMERAS ---
     rate_cameras(model_data)
 
+    # --- NET & GROSS Totals ---
+    compute_totals(model_data)
+
     return model_data
     
 
@@ -215,3 +218,35 @@ def rate_cameras(model_data: dict) -> None:
         cam["hull_rate"] = float(max_rate)
         prem = Decimal(cam["value"]) * Decimal(str(max_rate))
         cam["hull_premium"] = _money(prem)
+
+
+def compute_totals(model_data: dict) -> None:
+    """
+    Calculate NET totals, then derive GROSS at summary level. 
+        gross = net / (1 - brokerage)
+    """
+
+    # --- NET Totals ---
+    net_drones_hull = sum(Decimal(str(d["hull_premium"])) for d in model_data["drones"])
+    net_drones_tpl = sum(Decimal(str(d["tpl_layer_premium"])) for d in model_data["drones"])
+    net_cameras_hull = sum(Decimal(str(cam["hull_premium"])) for cam in model_data["detachable_cameras"])
+    net_total = net_drones_hull + net_drones_tpl + net_cameras_hull
+
+    # --- Store NET Totals ---
+    model_data["net_prem"]["drones_hull"] = _money(net_drones_hull)
+    model_data["net_prem"]["drones_tpl"] = _money(net_drones_tpl)
+    model_data["net_prem"]["cameras_hull"] = _money(net_cameras_hull)
+    model_data["net_prem"]["total"] = _money(net_total)
+
+    # --- GROSS From NET ---
+    factor = Decimal("1") - Decimal(str(model_data["brokerage"]))   # 0.70
+    gross_drones_hull = net_drones_hull / factor
+    gross_drones_tpl = net_drones_tpl / factor
+    gross_cameras_hull = net_cameras_hull / factor
+    gross_total = net_total / factor
+
+    # --- Store GROSS Totals ---
+    model_data["gross_prem"]["drones_hull"] = _money(gross_drones_hull)
+    model_data["gross_prem"]["drones_tpl"] = _money(gross_drones_tpl)
+    model_data["gross_prem"]["cameras_hull"] = _money(gross_cameras_hull)
+    model_data["gross_prem"]["total"] = _money(gross_total)
