@@ -5,7 +5,7 @@ Starter data for the UAV rating model.
 - tpl_limit and tpl_excess manually added so the file runs. 
 """
 
-from rating_constants import HULL_BASE_RATE, WEIGHT_ADJUSTMENT, TPL_BASE_RATE, TPL_ILF 
+from rating_constants import HULL_BASE_RATE, WEIGHT_ADJUSTMENT, TPL_BASE_RATE, TPL_ILF, DRONE_INACTIVE_FLAT_PREMIUM, CAMERA_INACTIVE_FLAT_PREMIUM 
 from decimal import Decimal, ROUND_HALF_UP
 
 def get_example_data():
@@ -125,6 +125,10 @@ def main():
     
     # --- CAMERAS ---
     rate_cameras(model_data)
+
+    # --- EXTENSIONS ---
+    apply_drone_extension(model_data)
+    apply_camera_extension(model_data)
 
     # --- NET & GROSS Totals ---
     compute_totals(model_data)
@@ -250,3 +254,55 @@ def compute_totals(model_data: dict) -> None:
     model_data["gross_prem"]["drones_tpl"] = _money(gross_drones_tpl)
     model_data["gross_prem"]["cameras_hull"] = _money(gross_cameras_hull)
     model_data["gross_prem"]["total"] = _money(gross_total)
+
+
+def apply_drone_extension(model_data: dict) -> None:
+    """
+    Extension 1:
+    - Keep full NET premiums for the top n drones by (hull + tpl) NET. 
+    - Set all remaining drones to a flat £150 NET total. 
+    NOTE: I'm going to allocate the flat £150 to the hull and set the TPL to 0.
+    """
+
+    n = model_data["max_drones_in_air"]
+    drones = model_data["drones"]
+
+    # 1) Compute the NET total for each drone
+    totals = [d["hull_premium"] + d["tpl_layer_premium"] for d in drones]
+
+    # 2) Find the nth largest total
+    top_n = sorted(totals, reverse=True)[:n]
+    if not top_n:
+        return
+    threshold = top_n[-1]
+
+    # 3) Keep drones >= threshold, set others to flat £150
+    for d in drones:
+        net_total = d["hull_premium"] + d["tpl_layer_premium"]
+        if net_total < threshold:
+            d["hull_premium"] = _money(DRONE_INACTIVE_FLAT_PREMIUM)
+            d["tpl_layer_premium"] = 0.0
+
+    
+def apply_camera_extension(model_data: dict) -> None:
+    """
+    Extension 2:
+    - If cameras > drones, keep full NET premiums for the top n cameras by value. 
+    - Remaning cameras ge a flat £50 NET. 
+    - Here n = number of drones. 
+    """
+
+    cams = model_data["detachable_cameras"]
+    drones = model_data["drones"]
+
+    if len(cams) <= len(drones):
+        return
+    
+    n = len(drones)
+
+    # 1) Sort the cameras by value (desc)
+    sorted_cams = sorted(cams, key=lambda c: c["value"], reverse=True)
+
+    # 2) Keep top n, set others to flat £50
+    for cam in sorted_cams[n:]:
+        cam["hull_premium"] = _money(CAMERA_INACTIVE_FLAT_PREMIUM)
