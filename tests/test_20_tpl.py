@@ -56,5 +56,6 @@ class TestDroneTPL(unittest.TestCase):
         ilfs = [D(drone["tpl_ilf"]).quantize(Q2) for drone in model_data["drones"]]
         self.assertCountEqual(ilfs, [D("1.00"), D("0.53"), D("0.31")])
 
+
 if __name__ == "__main__":
     unittest.main()

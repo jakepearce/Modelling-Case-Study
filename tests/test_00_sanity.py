@@ -8,7 +8,7 @@ class TestSanity(unittest.TestCase):
     - the top-level keys relied upon are present
     - Key types are correct (lists/dicts).
     """
-    
+
     def test_main_returns_structure(self):
 
         model_data = main()
@@ -25,6 +25,7 @@ class TestSanity(unittest.TestCase):
         self.assertIsInstance(model_data["detachable_cameras"], list)
         self.assertIsInstance(model_data["net_prem"], dict)
         self.assertIsInstance(model_data["gross_prem"], dict)
+
 
 if __name__ == "__main__":
     unittest.main()
