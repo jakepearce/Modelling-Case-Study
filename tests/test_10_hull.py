@@ -14,7 +14,7 @@ def D(x):
 
 class TestDroneHull(unittest.TestCase):
     """
-    This test checks:
+    This Test Checks:
     - Base hull rate: 0.06
     - Weight adjustment per band: 1.0/1.2/1.6
     - Premium per drone: value * (base * factor), rounded to 2dp
