@@ -137,11 +137,13 @@ def main():
     
 
 
-def _money(x: Decimal) -> float:
+def _money(x) -> float:
     """
-    Round a Decimla to 2 dp and return as float (JSON-friendly).
+    Round a Decimal to 2 dp and return as float (JSON-friendly).
+    Accepts int, float or Decimal.
     """
-    return float(x.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    d = x if isinstance(x, Decimal) else Decimal(str(x))
+    return float(d.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 def rate_hull_for_drone(drone: dict) -> dict:
@@ -270,11 +272,13 @@ def apply_drone_extension(model_data: dict) -> None:
     # 1) Compute the NET total for each drone
     totals = [d["hull_premium"] + d["tpl_layer_premium"] for d in drones]
 
-    # 2) Find the nth largest total
-    top_n = sorted(totals, reverse=True)[:n]
-    if not top_n:
-        return
-    threshold = top_n[-1]
+    # 2) Find the nth largest total and set a threshold
+    top_n = sorted(totals, reverse=True)
+    if n > 0:
+        top_n = top_n[:n]
+        threshold = top_n[-1]
+    else:
+        threshold = top_n[0] + 1  # If n=0, set threshold above max so all get flat rate
 
     # 3) Keep drones >= threshold, set others to flat £150
     for d in drones:
