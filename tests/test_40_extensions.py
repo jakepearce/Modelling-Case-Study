@@ -38,7 +38,7 @@ class TestExtensions(unittest.TestCase):
 
     """
     Test 2 Checks:
-    - With 4 cameras and 3 drones, only one leftover should become £50. 
+    - With 4 cameras and 3 drones (but only a maximum of two in the air), two should become £50. 
     - The calculated highest hull rate is 0.072. 
     - Check individual cameras and total camera hull premium.
     """
@@ -52,11 +52,11 @@ class TestExtensions(unittest.TestCase):
 
         # 1) Check individual cameras
         premiums = sorted([D(cam["hull_premium"]).quantize(Q2) for cam in model_data["detachable_cameras"]])
-        self.assertEqual(premiums, [D("50.00"), D("144.00"), D("180.00"), D("360.00")])
+        self.assertEqual(premiums, [D("50.00"), D("50.00"), D("180.00"), D("360.00")])
 
-        # 2) Check total camera hull premium (360 + 180 + 144 + 50 = 734)
+        # 2) Check total camera hull premium (360 + 180 + 50 + 50 = 640)
         total_premium = sum(D(cam["hull_premium"]) for cam in model_data["detachable_cameras"])
-        self.assertEqual(total_premium.quantize(Q2), D("734.00"))
+        self.assertEqual(total_premium.quantize(Q2), D("640.00"))
 
 
 if __name__ == "__main__":

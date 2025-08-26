@@ -293,16 +293,19 @@ def apply_camera_extension(model_data: dict) -> None:
     Extension 2:
     - If cameras > drones, keep full NET premiums for the top n cameras by value. 
     - Remaning cameras ge a flat £50 NET. 
-    - Here n = number of drones. 
+    - Here n = number of drones in the air (following from extension 1). 
+    - (If total drones < max_drones_in_air, n = total drones).
     """
 
     cams = model_data["detachable_cameras"]
-    drones = model_data["drones"]
 
-    if len(cams) <= len(drones):
+    total_drones = len(model_data["drones"])
+    max_drones = model_data["max_drones_in_air"]
+
+    n = max_drones if total_drones >= max_drones else total_drones
+
+    if len(cams) <= n:
         return
-    
-    n = len(drones)
 
     # 1) Sort the cameras by value (desc)
     sorted_cams = sorted(cams, key=lambda c: c["value"], reverse=True)

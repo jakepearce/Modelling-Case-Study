@@ -121,8 +121,8 @@ class TestEdgeCases(unittest.TestCase):
     def test_one_more_camera_than_drones(self):
         """
         5) More Cameras than Drones
-        - Test to ensure that if there are more cameras than drones, the correct number of cameras get the full premium and the rest are extras.
-        - (already tested in test_30_cameras but this is an explicit edge case).
+        - Test to ensure that if there are more cameras than drones in the air, the correct number of cameras get the full premium and the rest are extras.
+        - (already tested in test_40_extensions but this is an explicit edge case).
         """
 
         model_data = get_example_data()
@@ -133,20 +133,20 @@ class TestEdgeCases(unittest.TestCase):
         rate_cameras(model_data)
         apply_camera_extension(model_data)
 
-        # There are 3 drones, so 3 cameras should be full premium, 1 camera should be £50
+        # There are 2 drones at maximum one time in the air, so 2 cameras should be full premium, 2 cameras should be £50
         flat_rate_cameras = [cam for cam in model_data["detachable_cameras"] if D(cam["hull_premium"]) == D("50.00")]
-        self.assertEqual(len(flat_rate_cameras), 1)
+        self.assertEqual(len(flat_rate_cameras), 2)
 
     
     def test_equal_cameras_and_drones(self):
         """
         6) Equal Cameras and Drones
-        - Test to ensure that if there are equal cameras and drones, all cameras get the full premium.
+        - Test to ensure that if there are equal cameras and drones in the air, all cameras get the full premium.
         - (i.e. no cameras are extras).
         """
 
         model_data = get_example_data()
-        model_data["detachable_cameras"] = model_data["detachable_cameras"][:len(model_data["drones"])]
+        model_data["detachable_cameras"] = model_data["detachable_cameras"][:model_data["max_drones_in_air"]]
 
         for drone in model_data["drones"]:
             rate_hull_for_drone(drone)
