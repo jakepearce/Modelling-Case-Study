@@ -1,16 +1,7 @@
 import unittest
 from decimal import Decimal
-from copy import deepcopy
 from modelling_case_study import get_example_data, rate_hull_for_drone, rate_tpl_for_drone, rate_cameras, apply_camera_extension, apply_drone_extension, compute_totals
-
-# Helpers for Consistent Rounding
-Q2 = Decimal("0.01")  # 2 Decimal Places
-
-def D(x):
-    """
-    Helper to convert numbers to Decimal safely. 
-    """
-    return x if isinstance(x, Decimal) else Decimal(str(x))
+from tests.test_helpers import D, Q2
 
 
 class TestEdgeCases(unittest.TestCase):
@@ -167,7 +158,6 @@ class TestEdgeCases(unittest.TestCase):
         """
 
         model_data = get_example_data()
-        model_data = deepcopy(model_data)
         model_data["drones"][0]["weight"] = "30 - 50kg" # Invalid weight band
 
         with self.assertRaises((KeyError, ValueError)):

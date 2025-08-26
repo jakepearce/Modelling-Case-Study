@@ -1,16 +1,7 @@
 import unittest
 from decimal import Decimal
 from modelling_case_study import get_example_data, rate_hull_for_drone, rate_cameras
-
-# Helpers for Consistent Rounding
-Q2 = Decimal("0.01")  # 2 Decimal Places
-Q4 = Decimal("0.0001")  # 4 Decimal Places
-
-def D(x):
-    """
-    Helper to convert numbers to Decimal safely. 
-    """
-    return x if isinstance(x, Decimal) else Decimal(str(x))
+from tests.test_helpers import D, Q2, Q4
 
 
 class TestCameraHull(unittest.TestCase):

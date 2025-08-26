@@ -1,15 +1,7 @@
 import unittest
 from decimal import Decimal
 from modelling_case_study import main
-
-# Helpers for Consistent Rounding
-Q2 = Decimal("0.01")  # 2 Decimal Places
-
-def D(x):
-    """
-    Helper to convert numbers to Decimal safely. 
-    """
-    return x if isinstance(x, Decimal) else Decimal(str(x))
+from tests.test_helpers import D, Q2
 
 
 class TestEndToEnd(unittest.TestCase):
