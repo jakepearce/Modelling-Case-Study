@@ -12,6 +12,7 @@ def D(x):
     """
     return x if isinstance(x, Decimal) else Decimal(str(x))
 
+
 class TestCameraHull(unittest.TestCase):
     """
     This Test Checks:

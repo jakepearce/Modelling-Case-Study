@@ -127,8 +127,8 @@ def main():
     rate_cameras(model_data)
 
     # --- EXTENSIONS ---
-    apply_drone_extension(model_data)
-    apply_camera_extension(model_data)
+    #apply_drone_extension(model_data)
+    #apply_camera_extension(model_data)
 
     # --- NET & GROSS Totals ---
     compute_totals(model_data)

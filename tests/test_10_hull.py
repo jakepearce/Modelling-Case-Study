@@ -12,6 +12,7 @@ def D(x):
     """
     return x if isinstance(x, Decimal) else Decimal(str(x))
 
+
 class TestDroneHull(unittest.TestCase):
     """
     This Test Checks:
@@ -51,6 +52,6 @@ class TestDroneHull(unittest.TestCase):
         total_premium = sum(D(drone["hull_premium"]) for drone in model_data["drones"])
         self.assertEqual(total_premium.quantize(Q2), D("2832.00"))
         
-        
+
 if __name__ == "__main__":
     unittest.main()

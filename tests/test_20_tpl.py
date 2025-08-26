@@ -12,6 +12,7 @@ def D(x):
     """
     return x if isinstance(x, Decimal) else Decimal(str(x))
 
+
 class TestDroneTPL(unittest.TestCase):
     """
     This Test Checks:
